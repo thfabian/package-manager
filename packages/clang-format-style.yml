@@ -1,0 +1,10 @@
+# --- Clang Format Style ---
+name: clang-format-style
+path: /home/fabi/Dropbox/Linux/Packages/clang-format
+sudo: no
+compile:
+install:
+  - ln -s -f '/home/fabi/Dropbox/Linux/Packages/clang-format/clang-format-style' /home/fabi/.clang-format
+remove:
+  - rm -f /home/fabi/.clang-format
+...

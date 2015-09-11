@@ -1,0 +1,15 @@
+# --- Cleanup v2.0 ---
+name: cleanup-2.0
+git: https://github.com/thfabian/cleanup
+sudo: yes
+compile:
+  - mkdir build
+  - cd build
+  - cmake -G "Unix Makefiles" ../
+  - make -j 4
+install:
+  - cd build 
+  - sudo make install
+remove:
+  - sudo rm -f /usr/local/bin/cleanup
+...

@@ -1,0 +1,42 @@
+###########################################################-*- shell-script -*-#
+#
+#                         package-manager
+#                     (c) 2015 Fabian Thüring
+#
+# This file is distributed under the MIT Open Source License. See 
+# LICENSE.TXT for details.
+#
+################################################################################
+
+_package_manager()
+{
+    local cur prev opts popts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="--avail --install --remove --reinstall --help --package-dir --version"
+    popts=""
+
+    # Complete options (--inst => --install)
+    if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+    
+    # Complete packages (--install clea => --install cleanup-2.0 )
+    if [[ ${prev} == -* ]] ; then
+        PACKAGE_LOCATION=$(package-manager --package-dir 2>&1)
+
+        for f in $PACKAGE_LOCATION/*; do 
+        if [[ "$f" == *.yml ]]; then
+            pname=$(basename "$f" .yml)
+            popts="$popts $pname"        
+        fi
+        done
+        
+        COMPREPLY=( $(compgen -W "${popts}" -- ${cur}) )
+        return 0
+    fi
+}
+
+complete -F _package_manager package-manager

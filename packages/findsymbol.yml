@@ -1,0 +1,19 @@
+# --- FindSymbol v1.0 ---
+name: findsymbol
+git: https://github.com/thfabian/findsymbol
+sudo: yes
+compile:
+  - mkdir build
+  - export CXX=clang++
+  - export CC=clang
+  - cd build
+  - cmake -DFS_INSTALL_BASH=ON ../
+  - make -j 4
+install:
+  - cd build 
+  - sudo make install
+remove:
+  - sudo rm -f /usr/local/bin/findsymbol
+  - sudo rm -f /home/fabi/.findsymbol/config.xml
+  - sudo rm -f /etc/bash_completion.d/findsymbol_completion
+...
