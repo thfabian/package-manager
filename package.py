@@ -13,6 +13,7 @@
 import error
 import script
 import misc
+import preprocessor
 
 import os
 import sys
@@ -33,6 +34,11 @@ class PackageManager:
         self._packageDir = packageDir
         if not os.path.isdir(self._packageDir):
             error.fatal("package directory '%s' is invalid" % (self._packageDir))
+
+        # Setup preprocessor
+        replacement = dict()
+        replacement["$$HOME$$"] = str(os.environ['HOME'])
+        self._preprocessor = preprocessor.Preprocessor(replacement)            
             
         # Get information about the terminal
         row, col = os.popen('stty size', 'r').read().split()
@@ -74,7 +80,7 @@ class PackageManager:
         print "Installing %s" % fileName
         
         tdir = misc.appendRandomString(self._HOME, True)
-        buildscript = script.BuildScript(packageData, tdir)
+        buildscript = script.BuildScript(packageData, tdir, self._preprocessor)
         
         # Setup
         self.printStatus("Cloning git")
@@ -130,7 +136,7 @@ class PackageManager:
         print "Removing %s" % fileName
         
         tdir = misc.appendRandomString(self._HOME, True)
-        removescript = script.RemoveScript(packageData, tdir)
+        removescript = script.RemoveScript(packageData, tdir,self._preprocessor)
         
         # Setup
         self.printStatus("Removing")
@@ -200,3 +206,4 @@ class PackageManager:
     _HOME = ''
     _curStatusMsgLen = 0
     _consoleWidth = -1
+    _preprocessor = None

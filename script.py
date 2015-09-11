@@ -12,6 +12,7 @@
 
 import error
 import misc
+import preprocessor
 
 import os
 import subprocess
@@ -19,9 +20,10 @@ import shutil
 
 class Script:
     """ Script base class """
-    def __init__(self, packageData, tempDir):
+    def __init__(self, packageData, tempDir, preprocessor):
         self._packageData = packageData
         self._tempDir = tempDir
+        self._preprocessor = preprocessor
         
         if self._packageData is None:
             error.fatal("invalid package file")
@@ -40,7 +42,8 @@ class Script:
         trailing '\n' and error handling code
         """
         scriptString = str("#!/bin/sh\nset -e\nset -v\n") + scriptString + \
-                       str("\n")
+                       str("\n")             
+        scriptString = self._preprocessor.process(scriptString)
         scriptFileName = os.path.join(str(self._tempDir), str(filename))
         with open(scriptFileName, "w") as scriptFile:
             scriptFile.write(scriptString)
@@ -60,7 +63,6 @@ class Script:
                 self.cleanup()
             return (err, child.returncode)
         else:
-            print "oops"
             return (None, 0)
         
     def extract(self, key):
@@ -80,11 +82,12 @@ class Script:
     _packageName = ''
     _tempDir = ''
     _devNull = None
+    _preprocessor = None
         
 class BuildScript(Script):
     """ Convert information form package file into executable scripts """
-    def __init__(self, packageData, tempDir):
-        Script.__init__(self, packageData, tempDir)
+    def __init__(self, packageData, tempDir, preprocessor):
+        Script.__init__(self, packageData, tempDir, preprocessor)
         self.buildSetupScript()
         self.buildCompileScript()
         self.buildInstallScript()
@@ -104,9 +107,6 @@ class BuildScript(Script):
         script = ""
         dest = os.path.join(str(self._tempDir), str(self._packageName))
         if path:
-            if not os.path.isdir(path):
-                error.fatal("package file invalid: variable 'path' does not"\
-                            " exist")
             script += str("cp -r ") + str(path) + str(" ") + str(dest)
         elif git:
             script += str("git clone '") + str(git) + str("' ") + str(dest)
@@ -170,8 +170,8 @@ class BuildScript(Script):
     _script_install = None
     
 class RemoveScript(Script):
-    def __init__(self, packageData, tempDir):
-        Script.__init__(self, packageData, tempDir)
+    def __init__(self, packageData, tempDir, preprocessor):
+        Script.__init__(self, packageData, tempDir, preprocessor)
         self.buildRemoveScript()
         
     def buildRemoveScript(self):
