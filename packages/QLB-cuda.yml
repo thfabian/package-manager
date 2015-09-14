@@ -1,0 +1,13 @@
+# --- QLB [CUDA] - Qunatum Lattice Boltzmann ---
+name: QLB-cuda
+git: https://github.com/thfabian/QLB
+sudo: yes
+compile:
+  - make -j 4
+install:
+  - sudo cp ./QLB /usr/local/bin/QLB
+  - sudo cp ./QLBoptimizer /usr/local/bin/QLBoptimizer 
+remove:
+  - sudo rm -f /usr/local/bin/QLB
+  - sudo rm -f /usr/local/bin/QLBoptimizer
+...

@@ -10,8 +10,8 @@
 #
 ################################################################################
 
-import error
-import version
+from packagemanager import __VERSION__
+from . import error
 
 import os
 from time import gmtime, strftime
@@ -44,31 +44,39 @@ class MetaFileParser:
             if self._installedPackages is None:
                 self._installedPackages = dict()
 
-    """ Add a package from the meta-file index """
     def add(self, packageName):
+        """ Add a package to the meta-file index """
         if packageName in self._installedPackages:
             raise RuntimeError
         else: 
-            self._installedPackages[packageName] = 'installed'
-    
-    """ Remove a package from the meta-file index """
+            self._installedPackages[packageName] = \
+                [{'date': strftime("%d-%m-%Y %H:%M:%S")}]
+
     def remove(self, packageName):
+        """ Remove a package from the meta-file index """
         if not packageName in self._installedPackages:
             raise RuntimeError
         else: 
             del self._installedPackages[packageName]
 
-    """ Check if package is already installed """
     def isInstalled(self, packageName):
-       return True if packageName in self._installedPackages else False
+        """ Check if package is already installed """
+        return True if packageName in self._installedPackages else False
+       
+    def getInstallDate(self, packageName):
+        """ Get the install date of the package """
+        if self.isInstalled(packageName):
+            return self._installedPackages[packageName][0]['date']
+        else:
+            return ""
         
-    """ Update meta-file """
     def commitUpdate(self):
+        """ Update meta-file """
         if not self._metaDirIsPresent:
             os.mkdir(self._metaDirName)
         
         metaFile = file(self._metaFileName, 'w')
-        metaFile.write("# package-manager ("+version.__VERSION__+") - "+\
+        metaFile.write("# package-manager ("+__VERSION__+") - "+\
                        strftime("%a, %d %b %Y %H:%M:%S\n"))
         if bool(self._installedPackages):
             metaFile.write(dump(self._installedPackages, Dumper=Dumper, 

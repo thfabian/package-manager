@@ -1,0 +1,14 @@
+# --- GBB - Grid Building Blocks v1.0 ---
+name: GBB
+git: https://github.com/thfabian/GBB
+sudo: yes
+compile:
+  - mkdir build
+  - cd build
+  - cmake ../
+install:
+  - cd build 
+  - sudo make install
+remove:
+  - sudo rm -rf /usr/local/include/gbb
+...

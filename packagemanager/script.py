@@ -10,9 +10,9 @@
 #
 ################################################################################
 
-import error
-import misc
-import preprocessor
+from . import error
+from . import misc
+from . import preprocessor
 
 import os
 import subprocess
@@ -39,7 +39,7 @@ class Script:
     def convertToFile(self, scriptString, filename):
         """ 
         Convert string to script file by adding preamble '#!/bin/sh' aswell as
-        trailing '\n' and error handling code
+        trailing '\n' and error handling code 'set -e; set -v'
         """
         scriptString = str("#!/bin/sh\nset -e\nset -v\n") + scriptString + \
                        str("\n")             

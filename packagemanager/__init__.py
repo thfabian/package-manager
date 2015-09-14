@@ -11,3 +11,11 @@
 ################################################################################
 
 __VERSION__ = "1.1"
+
+# Sub modules
+from .error import *
+from .meta_parser import *
+from .misc import *
+from .package import *
+from .preprocessor import *
+from .script import *

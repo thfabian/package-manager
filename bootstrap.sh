@@ -23,6 +23,14 @@ if [ $(id -u) != 0 ]; then
     exit 1
 fi
 
+# Check dpkg dependencies
+if [ $(dpkg-query -W -f='${Status}\n' python-yaml 2>/dev/null | \
+     grep -c "ok installed") -eq 0 ]; then
+    printf "bootstrap: error: missing dpkg dependency 'python-yaml', try: \n"
+    printf "> sudo apt-get install python-yaml\n"
+    exit 1
+fi
+
 # Install
 printf "%-40s" "Creating symlinks ... "
 sudo ln -s -f $PM_SCRIPT_LOCATION $PM_INSTALL_LOCATION

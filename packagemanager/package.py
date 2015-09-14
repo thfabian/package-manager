@@ -10,15 +10,14 @@
 #
 ################################################################################
 
-import error
-import script
-import misc
-import preprocessor
+from . import error
+from . import script
+from . import misc
+from . import preprocessor
+from . import meta_parser
 
 import os
 import sys
-import tempfile
-import shutil
 import subprocess
 
 from yaml import load, dump
@@ -30,6 +29,14 @@ except ImportError:
 class PackageManager:
     """ Manage packages """
     def __init__(self, packageDir):
+    
+        if os.getuid() == 0:
+            error.warning("running this script as root might cause problems "\
+                          "in scripts depending on local environment variables")
+        
+        # Parse the meta file
+        self._metaFile = meta_parser.MetaFileParser()
+    
         # Set package directory
         self._packageDir = packageDir
         if not os.path.isdir(self._packageDir):
@@ -59,16 +66,27 @@ class PackageManager:
             if f.endswith('.yml'):
                 packages.append(f.replace('.yml',''))
         
-        packages.sort()
-        for p in sorted(packages, key=lambda s: s.lower()):
-            print p
+        packages.sort(key=lambda s: s.lower())
+
+        maxPackageLen = len(max(packages, key=lambda s: len(s)))
         
+        if maxPackageLen + 50 < self._consoleWidth: 
+            maxPackageLen += 10        
+        
+        for pName in packages:
+            pad = maxPackageLen - len(pName)
+            if self._metaFile.isInstalled(pName):
+                print pName, pad*' ', "[INSTALLED]", 3*' ', \
+                      self._metaFile.getInstallDate(pName)
+            else:
+                print pName
+         
         sys.exit(0)
         
-    def install(self, fileName, metaFile):
+    def install(self, fileName):
         """ Install the package given by fileName """
         
-        if metaFile.isInstalled(fileName):
+        if self._metaFile.isInstalled(fileName):
             print "%s is already installed" % fileName
             return
         
@@ -118,13 +136,13 @@ class PackageManager:
         # Cleanup
         self.printStatus("Cleaning up")
         buildscript.cleanup()
-        metaFile.add(fileName)
+        self._metaFile.add(fileName)
         self.printSuccess()     
 
-    def remove(self, fileName, metaFile):
+    def remove(self, fileName):
         """ remove the package given by fileName """
         
-        if not metaFile.isInstalled(fileName):
+        if not self._metaFile.isInstalled(fileName):
             print "%s is not installed" % fileName
             return
         
@@ -152,9 +170,12 @@ class PackageManager:
         # Cleanup
         self.printStatus("Cleaning up")
         removescript.cleanup()
-        metaFile.remove(fileName)
+        self._metaFile.remove(fileName)
         self.printSuccess() 
 
+    def commitChange(self):
+        """ Commit all changes by updating the meta file """
+        self._metaFile.commitUpdate()
 
     def parsePackageFile(self, packageFilename, packageName):
         """ Parse the package file given as a YAML file """
@@ -207,3 +228,4 @@ class PackageManager:
     _curStatusMsgLen = 0
     _consoleWidth = -1
     _preprocessor = None
+    _metaFile = None

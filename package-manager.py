@@ -10,10 +10,7 @@
 #
 ################################################################################
 
-import package
-import error
-import meta_parser
-import version
+import packagemanager as pm
 
 import os
 import sys
@@ -40,10 +37,10 @@ def main():
     packageDir = os.path.dirname(os.path.realpath(__file__))+'/packages'
 
     # Install error handler
-    error.ErrorHandler(os.path.basename(sys.argv[0]))
+    pm.ErrorHandler(os.path.basename(sys.argv[0]))
 
     usage = "Usage: %prog [Options]"
-    vers = "package-manager "+version.__VERSION__
+    vers = "package-manager "+ pm.__VERSION__
     parser = op.OptionParser(usage=usage, version=vers, 
                              option_class=ExtendedOption)
                       
@@ -74,31 +71,27 @@ def main():
     if options.package_dir:
         print packageDir
         sys.exit(0)
-
-    # Parse the meta file
-    mFile = meta_parser.MetaFileParser()
     
     # Setup package manager
-    pManager = package.PackageManager(packageDir)
+    pManager = pm.PackageManager(packageDir)
     
     if options.avail:
         pManager.listAvailPackages()
         
     if options.install:
         for p in options.install.split(','):
-            pManager.install(p, mFile)
+            pManager.install(p)
             
     if options.remove:
         for p in options.remove.split(','):
-            pManager.remove(p, mFile)
+            pManager.remove(p)
             
     if options.reinstall:
         for p in options.reinstall.split(','):
-            if mFile.isInstalled(p):
-                pManager.remove(p, mFile)
-            pManager.install(p, mFile)
+            pManager.remove(p)
+            pManager.install(p)
 
-    mFile.commitUpdate()
+    pManager.commitChange()
     
 if __name__ == "__main__":
     main()
